@@ -2255,7 +2255,7 @@ impl From<VMConfigView> for VMConfig {
     }
 }
 
-/// Typed view of ExtCostsConfig t preserve JSON output field names in protocol
+/// Typed view of ExtCostsConfig to preserve JSON output field names in protocol
 /// config RPC output.
 #[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq)]
 pub struct ExtCostsConfigView {
