@@ -343,6 +343,8 @@ min_allowed_top_level_account_length: 32
 storage_amount_per_byte: 100_000_000_000_000_000_000
 storage_num_bytes_account: 100
 storage_num_extra_bytes_record: 40
+wasm_storage_read_base: 10_000_000_000 (weight: 1.5)
+# wasm_storage_read_base: 10_000_000_000
 "#;
 
     static BASE_1: &str = r#"
@@ -363,6 +365,11 @@ storage_num_extra_bytes_record   :   40
 registrar_account_id: registrar -> near
 min_allowed_top_level_account_length: 32 -> 32_000
 wasm_regular_op_cost: 3_856_371
+
+wasm_storage_read_base: (weight: 1.5 -> 1.7)
+wasm_storage_read_base_weight: 1.5 -> 1.7
+
+# wasm_storage_read_base: 10_000_000_000 -> 10_000_000_000
 "#;
 
     static DIFF_1: &str = r#"
@@ -395,6 +402,7 @@ max_memory_pages: 512
                 (Parameter::StorageAmountPerByte, "\"100000000000000000000\""),
                 (Parameter::StorageNumBytesAccount, "100"),
                 (Parameter::StorageNumExtraBytesRecord, "40"),
+                (Parameter::WasmStorageReadBase, "10000000000"),
             ],
         );
     }
@@ -428,6 +436,7 @@ max_memory_pages: 512
                 (Parameter::StorageNumBytesAccount, "100"),
                 (Parameter::StorageNumExtraBytesRecord, "40"),
                 (Parameter::WasmRegularOpCost, "3856371"),
+                (Parameter::WasmStorageReadBase, "10000000000"),
             ],
         );
     }
@@ -446,6 +455,7 @@ max_memory_pages: 512
                 (Parameter::StorageNumExtraBytesRecord, "77"),
                 (Parameter::WasmRegularOpCost, "0"),
                 (Parameter::MaxMemoryPages, "512"),
+                (Parameter::WasmStorageReadBase, "10000000000"),
             ],
         );
     }
@@ -462,6 +472,7 @@ max_memory_pages: 512
                 (Parameter::StorageAmountPerByte, "\"100000000000000000000\""),
                 (Parameter::StorageNumBytesAccount, "100"),
                 (Parameter::StorageNumExtraBytesRecord, "40"),
+                (Parameter::WasmStorageReadBase, "10000000000"),
             ],
         );
     }
