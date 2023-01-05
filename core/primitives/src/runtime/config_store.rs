@@ -13,7 +13,7 @@ macro_rules! include_config {
 
 /// The base config file with all initial parameter values defined.
 /// Later version are calculated by applying diffs to this base.
-static BASE_CONFIG: &str = include_config!("parameters.txt");
+static BASE_CONFIG: &str = include_config!("parameters.yaml");
 
 /// Stores pairs of protocol versions for which runtime config was updated and
 /// the file containing the diffs in bytes.

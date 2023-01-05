@@ -4,6 +4,7 @@ use near_primitives_core::parameter::{FeeParameter, Parameter};
 use near_primitives_core::runtime::fees::{RuntimeFeesConfig, StorageUsageConfig};
 use num_rational::Rational;
 use serde::de::DeserializeOwned;
+use serde::Deserialize;
 use serde_json::json;
 use std::any::Any;
 use std::collections::BTreeMap;
@@ -29,6 +30,8 @@ pub(crate) enum InvalidConfigError {
     NoSeparator(usize, String),
     #[error("intermediate JSON created by parser does not match `RuntimeConfig`")]
     WrongStructure(#[source] serde_json::Error),
+    #[error("could not parse YAML that defines the structure of the config")]
+    InvalidYaml(#[source] serde_yaml::Error),
     #[error("config diff expected to contain old value `{1}` for parameter `{0}`")]
     OldValueExists(Parameter, String),
     #[error(
@@ -43,15 +46,35 @@ pub(crate) enum InvalidConfigError {
     WrongValueType(#[source] serde_json::Error, Parameter, &'static str, String),
 }
 
+/// Represents YAML values supported by parameter config.
+#[derive(Deserialize, Clone, Debug)]
+#[serde(untagged)]
+pub enum ParameterValue {
+    Number(u64),
+    String(String),
+}
+
 impl std::str::FromStr for ParameterTable {
     type Err = InvalidConfigError;
     fn from_str(arg: &str) -> Result<ParameterTable, InvalidConfigError> {
-        let parameters = txt_to_key_values(arg)
-            .map(|result| {
-                let (typed_key, value) = result?;
-                Ok((typed_key, parse_parameter_txt_value(value.trim())?))
+        let yaml_map: BTreeMap<String, ParameterValue> =
+            serde_yaml::from_str(arg).map_err(|err| InvalidConfigError::InvalidYaml(err))?;
+
+        let parameters = yaml_map
+            .iter()
+            .map(|(key, value)| {
+                let typed_key: Parameter = key
+                    .trim()
+                    .parse()
+                    .map_err(|err| InvalidConfigError::UnknownParameter(err, key.to_owned()))?;
+                let json_value = match value {
+                    ParameterValue::Number(n) => json!(n),
+                    ParameterValue::String(s) => parse_parameter_txt_value(s)?,
+                };
+                Ok((typed_key, json_value))
             })
             .collect::<Result<BTreeMap<_, _>, _>>()?;
+
         Ok(ParameterTable { parameters })
     }
 }
@@ -354,7 +377,7 @@ min_allowed_top_level_account_length: 32
 
 # Comment line with trailing whitespace # 
 
-storage_amount_per_byte: 100000000000000000000
+storage_amount_per_byte: "100000000000000000000"
 storage_num_bytes_account: 100
 storage_num_extra_bytes_record   :   40  
 
@@ -498,7 +521,7 @@ max_memory_pages: 512
     fn test_parameter_table_no_key() {
         assert_matches!(
             check_invalid_parameter_table(": 100", &[]),
-            InvalidConfigError::UnknownParameter(_, _)
+            InvalidConfigError::InvalidYaml(_)
         );
     }
 
@@ -514,7 +537,7 @@ max_memory_pages: 512
     fn test_parameter_table_wrong_separator() {
         assert_matches!(
             check_invalid_parameter_table("wasm_regular_op_cost=100", &[]),
-            InvalidConfigError::NoSeparator(1, _)
+            InvalidConfigError::InvalidYaml(_)
         );
     }
 
