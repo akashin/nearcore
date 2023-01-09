@@ -3394,6 +3394,7 @@ dependencies = [
  "primitive-types",
  "rand 0.8.5",
  "reed-solomon-erasure",
+ "ron",
  "serde",
  "serde_json",
  "smart-default",
@@ -4885,6 +4886,17 @@ checksum = "7e9562ea1d70c0cc63a34a22d977753b50cca91cc6b6527750463bd5dd8697bc"
 dependencies = [
  "libc",
  "librocksdb-sys",
+]
+
+[[package]]
+name = "ron"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "300a51053b1cb55c80b7a9fde4120726ddf25ca241a1cbb926626f62fb136bff"
+dependencies = [
+ "base64",
+ "bitflags",
+ "serde",
 ]
 
 [[package]]

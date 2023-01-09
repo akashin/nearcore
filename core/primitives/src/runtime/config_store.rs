@@ -14,6 +14,7 @@ macro_rules! include_config {
 /// The base config file with all initial parameter values defined.
 /// Later version are calculated by applying diffs to this base.
 static BASE_CONFIG: &str = include_config!("parameters.txt");
+static BASE_CONFIG_RON: &str = include_config!("parameters.ron");
 
 /// Stores pairs of protocol versions for which runtime config was updated and
 /// the file containing the diffs in bytes.
@@ -51,6 +52,12 @@ impl RuntimeConfigStore {
     pub fn new(genesis_runtime_config: Option<&RuntimeConfig>) -> Self {
         let mut params: ParameterTable =
             BASE_CONFIG.parse().expect("Failed parsing base parameter file.");
+
+        let ron_params: ron::Map = ron::from_str(BASE_CONFIG_RON).unwrap();
+        assert_eq!(
+            ron_params[&ron::Value::String("action_receipt_creation_send_sir".to_string())],
+            ron::Value::Number(ron::Number::new(108_059_500_000i64))
+        );
 
         let mut store = BTreeMap::new();
         let initial_config = RuntimeConfig::new(&params).unwrap_or_else(|err| panic!("Failed generating `RuntimeConfig` from parameters for base parameter file. Error: {err}"));
