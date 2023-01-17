@@ -56,9 +56,9 @@ impl RuntimeConfigStore {
         let initial_config = RuntimeConfig::new(&params).unwrap_or_else(|err| panic!("Failed generating `RuntimeConfig` from parameters for base parameter file. Error: {err}"));
         store.insert(0, Arc::new(initial_config));
 
-        for (protocol_version, diff_bytes) in CONFIG_DIFFS {
+        for (protocol_version, diff_bytes) in CONFIG_DIFFS.iter().rev() {
             let diff :ParameterTableDiff= diff_bytes.parse().unwrap_or_else(|err| panic!("Failed parsing runtime parameters diff for version {protocol_version}. Error: {err}"));
-            params.apply_diff(diff).unwrap_or_else(|err| panic!("Failed applying diff to `RuntimeConfig` for version {protocol_version}. Error: {err}"));
+            params.revert_diff(diff).unwrap_or_else(|err| panic!("Failed applying diff to `RuntimeConfig` for version {protocol_version}. Error: {err}"));
             store.insert(
                 *protocol_version,
                 Arc::new(RuntimeConfig::new(&params).unwrap_or_else(|err| panic!("Failed generating `RuntimeConfig` from parameters for version {protocol_version}. Error: {err}"))),
@@ -191,7 +191,7 @@ mod tests {
 
         let expected_config = {
             let first_diff = CONFIG_DIFFS[0].1.parse().unwrap();
-            base_params.apply_diff(first_diff).unwrap();
+            base_params.revert_diff(first_diff).unwrap();
             RuntimeConfig::new(&base_params).unwrap()
         };
         assert_eq!(**config, expected_config);
@@ -200,7 +200,7 @@ mod tests {
         assert_eq!(config.fees.fee(ActionCosts::new_data_receipt_base).send_sir, 36_486_732_312);
         let expected_config = {
             let second_diff = CONFIG_DIFFS[1].1.parse().unwrap();
-            base_params.apply_diff(second_diff).unwrap();
+            base_params.revert_diff(second_diff).unwrap();
             RuntimeConfig::new(&base_params).unwrap()
         };
         assert_eq!(config.as_ref(), &expected_config);

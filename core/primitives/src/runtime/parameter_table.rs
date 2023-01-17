@@ -27,13 +27,13 @@ pub(crate) enum InvalidConfigError {
     #[error("could not parse YAML that defines the structure of the config")]
     InvalidYaml(#[source] serde_yaml::Error),
     #[error("config diff expected to contain old value `{1:?}` for parameter `{0}`")]
-    OldValueExists(Parameter, serde_yaml::Value),
+    NewValueExists(Parameter, serde_yaml::Value),
     #[error(
         "unexpected old value `{1:?}` for parameter `{0}` in config diff, previous version does not have such a value"
     )]
-    NoOldValueExists(Parameter, serde_yaml::Value),
+    NoNewValueExists(Parameter, serde_yaml::Value),
     #[error("expected old value `{1:?}` but found `{2:?}` for parameter `{0}` in config diff")]
-    WrongOldValue(Parameter, serde_yaml::Value, serde_yaml::Value),
+    WrongNewValue(Parameter, serde_yaml::Value, serde_yaml::Value),
     #[error("expected a value for `{0}` but found none")]
     MissingParameter(Parameter),
     #[error("expected a value of type `{2}` for `{1}` but could not parse it from `{3:?}`")]
@@ -110,34 +110,34 @@ impl TryFrom<&ParameterTable> for RuntimeConfig {
 }
 
 impl ParameterTable {
-    pub(crate) fn apply_diff(
+    pub(crate) fn revert_diff(
         &mut self,
         diff: ParameterTableDiff,
     ) -> Result<(), InvalidConfigError> {
         for (key, (before, after)) in diff.parameters {
-            if before.is_null() {
+            if after.is_null() {
                 match self.parameters.get(&key) {
                     Some(serde_yaml::Value::Null) | None => {
-                        self.parameters.insert(key, after);
+                        self.parameters.insert(key, before);
                     }
-                    Some(old_value) => {
-                        return Err(InvalidConfigError::OldValueExists(key, old_value.clone()))
+                    Some(new_value) => {
+                        return Err(InvalidConfigError::NewValueExists(key, new_value.clone()))
                     }
                 }
             } else {
                 match self.parameters.get(&key) {
                     Some(serde_yaml::Value::Null) | None => {
-                        return Err(InvalidConfigError::NoOldValueExists(key, before.clone()))
+                        return Err(InvalidConfigError::NoNewValueExists(key, after.clone()))
                     }
-                    Some(old_value) => {
-                        if *old_value != before {
-                            return Err(InvalidConfigError::WrongOldValue(
+                    Some(new_value) => {
+                        if *new_value != after {
+                            return Err(InvalidConfigError::WrongNewValue(
                                 key,
-                                old_value.clone(),
-                                before.clone(),
+                                new_value.clone(),
+                                after.clone(),
                             ));
                         } else {
-                            self.parameters.insert(key, after);
+                            self.parameters.insert(key, before);
                         }
                     }
                 }
@@ -308,7 +308,7 @@ mod tests {
         let mut params: ParameterTable = base_config.parse().unwrap();
         for diff in diffs {
             let diff: ParameterTableDiff = diff.parse().unwrap();
-            params.apply_diff(diff).unwrap();
+            params.revert_diff(diff).unwrap();
         }
 
         let expected_map = BTreeMap::from_iter(expected.into_iter().map(|(param, value)| {
@@ -331,7 +331,7 @@ mod tests {
 
         let result = params.and_then(|params: ParameterTable| {
             diffs.iter().try_fold(params, |mut params, diff| {
-                params.apply_diff(diff.parse()?)?;
+                params.revert_diff(diff.parse()?)?;
                 Ok(params)
             })
         });
@@ -535,7 +535,7 @@ max_memory_pages: { new: 512 }
                 "min_allowed_top_level_account_length: 3_200_000_000",
                 &["min_allowed_top_level_account_length: { old: 3_200_000, new: 1_600_000 }"]
             ),
-            InvalidConfigError::WrongOldValue(
+            InvalidConfigError::WrongNewValue(
                 Parameter::MinAllowedTopLevelAccountLength,
                 expected,
                 found
@@ -553,7 +553,7 @@ max_memory_pages: { new: 512 }
                 "min_allowed_top_level_account_length: 3_200_000_000",
                 &["min_allowed_top_level_account_length: { new: 1_600_000 }"]
             ),
-            InvalidConfigError::OldValueExists(Parameter::MinAllowedTopLevelAccountLength, expected) => {
+            InvalidConfigError::NewValueExists(Parameter::MinAllowedTopLevelAccountLength, expected) => {
                 assert_eq!(expected, serde_yaml::to_value(3200000000i64).unwrap());
             }
         );
@@ -566,7 +566,7 @@ max_memory_pages: { new: 512 }
                 "min_allowed_top_level_account_length: 3_200_000_000",
                 &["wasm_regular_op_cost: { old: 3_200_000, new: 1_600_000 }"]
             ),
-            InvalidConfigError::NoOldValueExists(Parameter::WasmRegularOpCost, found) => {
+            InvalidConfigError::NoNewValueExists(Parameter::WasmRegularOpCost, found) => {
                 assert_eq!(found, serde_yaml::to_value(3200000).unwrap());
             }
         );
