@@ -8,6 +8,7 @@ use near_primitives_core::{
     types::Gas,
 };
 use std::collections::HashMap;
+use std::time::Duration;
 
 #[inline]
 pub fn with_ext_cost_counter(f: impl FnOnce(&mut HashMap<ExtCosts, u64>)) {
@@ -233,6 +234,10 @@ impl GasCounter {
         self.inc_ext_costs_counter(cost, 1);
         self.update_profile_host(cost, base_fee);
         self.burn_gas(base_fee)
+    }
+
+    pub fn add_time(&mut self, cost: ExtCosts, value: Duration) {
+        self.profile.add_ext_time(cost, value);
     }
 
     /// A helper function to pay base cost gas fee for batching an action.

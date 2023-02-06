@@ -900,6 +900,8 @@ impl<'a> VMLogic<'a> {
     ///
     /// `base + write_register_base + write_register_byte * num_bytes + sha256_base + sha256_byte * num_bytes`
     pub fn sha256(&mut self, value_len: u64, value_ptr: u64, register_id: u64) -> Result<()> {
+        let timer = std::time::Instant::now();
+
         self.gas_counter.pay_base(sha256_base)?;
         let value = get_memory_or_register!(self, value_ptr, value_len)?;
         self.gas_counter.pay_per(sha256_byte, value.len() as u64)?;
@@ -907,12 +909,14 @@ impl<'a> VMLogic<'a> {
         use sha2::Digest;
 
         let value_hash = sha2::Sha256::digest(&value);
-        self.registers.set(
+        let result = self.registers.set(
             &mut self.gas_counter,
             &self.config.limit_config,
             register_id,
             value_hash.as_slice(),
-        )
+        );
+        self.gas_counter.add_time(sha256_base, timer.elapsed());
+        result
     }
 
     /// Hashes the given value using keccak256 and returns it into `register_id`.

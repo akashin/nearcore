@@ -5,6 +5,7 @@ use crate::types::Gas;
 use borsh::{BorshDeserialize, BorshSerialize};
 use enum_map::{enum_map, Enum, EnumMap};
 use std::fmt;
+use std::time::Duration;
 use strum::IntoEnumIterator;
 
 mod profile_v2;
@@ -18,6 +19,8 @@ pub struct ProfileDataV3 {
     wasm_ext_profile: EnumMap<ExtCosts, Gas>,
     /// Gas spent on execution inside the WASM VM.
     wasm_gas: Gas,
+    /// Time spent on execution inside the WASM VM.
+    wasm_ext_time_profile: EnumMap<ExtCosts, Duration>,
 }
 
 impl Default for ProfileDataV3 {
@@ -33,6 +36,7 @@ impl ProfileDataV3 {
             actions_profile: enum_map! { _ => 0 },
             wasm_ext_profile: enum_map! { _ => 0 },
             wasm_gas: 0,
+            wasm_ext_time_profile: enum_map! { _ => Duration::ZERO },
         }
     }
 
@@ -71,6 +75,11 @@ impl ProfileDataV3 {
     #[inline]
     pub fn add_ext_cost(&mut self, ext: ExtCosts, value: Gas) {
         self.wasm_ext_profile[ext] = self.wasm_ext_profile[ext].saturating_add(value);
+    }
+
+    #[inline]
+    pub fn add_ext_time(&mut self, ext: ExtCosts, value: Duration) {
+        self.wasm_ext_time_profile[ext] = self.wasm_ext_time_profile[ext].saturating_add(value);
     }
 
     /// WasmInstruction is the only cost we don't explicitly account for.
@@ -124,7 +133,8 @@ impl BorshDeserialize for ProfileDataV3 {
             cost => ext_array.get(borsh_ext_index(cost)).copied().unwrap_or(0)
         };
 
-        Ok(Self { actions_profile, wasm_ext_profile, wasm_gas })
+        let wasm_ext_time_profile = enum_map! { _ => Duration::ZERO };
+        Ok(Self { actions_profile, wasm_ext_profile, wasm_gas, wasm_ext_time_profile })
     }
 }
 
