@@ -901,6 +901,7 @@ impl<'a> VMLogic<'a> {
     /// `base + write_register_base + write_register_byte * num_bytes + sha256_base + sha256_byte * num_bytes`
     pub fn sha256(&mut self, value_len: u64, value_ptr: u64, register_id: u64) -> Result<()> {
         let timer = std::time::Instant::now();
+        let start_burnt_gas = self.gas_counter.burnt_gas();
 
         self.gas_counter.pay_base(sha256_base)?;
         let value = get_memory_or_register!(self, value_ptr, value_len)?;
@@ -916,6 +917,7 @@ impl<'a> VMLogic<'a> {
             value_hash.as_slice(),
         );
         self.gas_counter.add_time(sha256_base, timer.elapsed());
+        let end_burnt_gas = self.gas_counter.burnt_gas();
         result
     }
 
