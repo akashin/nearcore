@@ -440,7 +440,7 @@ pub enum ExecutionMetadata {
     V1,
     /// V2: With ProfileData by legacy `Cost` enum
     V2(ProfileDataV2),
-    // V3: With ProfileData by gas parameters
+    /// V3: With ProfileData by gas parameters
     V3(ProfileDataV3),
 }
 
