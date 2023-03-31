@@ -2,7 +2,7 @@ use crate::runtime::migration_data::{MigrationData, MigrationFlags};
 use crate::{
     hash::CryptoHash,
     runtime::config::RuntimeConfig,
-    types::{Balance, BlockHeight, CompiledContractCache, EpochHeight, EpochId, Gas},
+    types::{Balance, BlockHeight, CompiledContractCache, Compute, EpochHeight, EpochId},
     version::ProtocolVersion,
 };
 use std::sync::Arc;
@@ -23,9 +23,9 @@ pub struct ApplyState {
     pub gas_price: Balance,
     /// The current block timestamp (number of non-leap-nanoseconds since January 1, 1970 0:00:00 UTC).
     pub block_timestamp: u64,
-    /// Gas limit for a given chunk.
-    /// If None is given, assumes there is no gas limit.
-    pub gas_limit: Option<Gas>,
+    /// Compute limit for a given chunk.
+    /// If None is given, assumes there is no compute limit.
+    pub compute_limit: Option<Compute>,
     /// Current random seed (from current block vrf output).
     pub random_seed: CryptoHash,
     /// Current Protocol version when we apply the state transition

@@ -200,7 +200,7 @@ impl TrieViewer {
             epoch_height: view_state.epoch_height,
             gas_price: 0,
             block_timestamp: view_state.block_timestamp,
-            gas_limit: None,
+            compute_limit: None,
             random_seed: root,
             current_protocol_version: view_state.current_protocol_version,
             config: config.clone(),

@@ -6,6 +6,7 @@ use chrono::DateTime;
 use chrono::Utc;
 use near_epoch_manager::shard_tracker::ShardTracker;
 use near_primitives::sandbox::state_patch::SandboxStatePatch;
+use near_primitives::types::Compute;
 use num_rational::Rational32;
 
 use crate::metrics;
@@ -417,7 +418,7 @@ pub trait RuntimeAdapter: Send + Sync {
         transactions: &[SignedTransaction],
         last_validator_proposals: ValidatorStakeIter,
         gas_price: Balance,
-        gas_limit: Gas,
+        compute_limit: Compute,
         challenges_result: &ChallengesResult,
         random_seed: CryptoHash,
         is_new_chunk: bool,
@@ -443,7 +444,7 @@ pub trait RuntimeAdapter: Send + Sync {
             transactions,
             last_validator_proposals,
             gas_price,
-            gas_limit,
+            compute_limit,
             challenges_result,
             random_seed,
             false,
@@ -466,7 +467,7 @@ pub trait RuntimeAdapter: Send + Sync {
         transactions: &[SignedTransaction],
         last_validator_proposals: ValidatorStakeIter,
         gas_price: Balance,
-        gas_limit: Gas,
+        compute_limit: Compute,
         challenges_result: &ChallengesResult,
         random_seed: CryptoHash,
         generate_storage_proof: bool,
@@ -489,7 +490,7 @@ pub trait RuntimeAdapter: Send + Sync {
         transactions: &[SignedTransaction],
         last_validator_proposals: ValidatorStakeIter,
         gas_price: Balance,
-        gas_limit: Gas,
+        compute_limit: Compute,
         challenges_result: &ChallengesResult,
         random_value: CryptoHash,
         is_new_chunk: bool,

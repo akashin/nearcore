@@ -157,7 +157,7 @@ impl RuntimeUser {
             block_timestamp: 0,
             epoch_height: 0,
             gas_price: MIN_GAS_PRICE,
-            gas_limit: None,
+            compute_limit: None,
             random_seed: Default::default(),
             epoch_id: Default::default(),
             current_protocol_version: PROTOCOL_VERSION,

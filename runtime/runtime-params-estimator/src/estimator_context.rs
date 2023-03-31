@@ -134,7 +134,7 @@ impl<'c> EstimatorContext<'c> {
             epoch_height: 0,
             gas_price: 0,
             block_timestamp: 0,
-            gas_limit: None,
+            compute_limit: None,
             random_seed: Default::default(),
             current_protocol_version: PROTOCOL_VERSION,
             config: Arc::new(runtime_config),

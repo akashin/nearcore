@@ -39,7 +39,7 @@ use near_primitives::syncing::{get_num_state_parts, STATE_PART_MEMORY_LIMIT};
 use near_primitives::transaction::SignedTransaction;
 use near_primitives::types::validator_stake::ValidatorStakeIter;
 use near_primitives::types::{
-    AccountId, Balance, BlockHeight, CompiledContractCache, EpochHeight, EpochId,
+    AccountId, Balance, BlockHeight, CompiledContractCache, Compute, EpochHeight, EpochId,
     EpochInfoProvider, Gas, MerkleHash, NumShards, ShardId, StateChangeCause,
     StateChangesForSplitStates, StateRoot, StateRootNode,
 };
@@ -403,7 +403,7 @@ impl NightshadeRuntime {
         transactions: &[SignedTransaction],
         last_validator_proposals: ValidatorStakeIter,
         gas_price: Balance,
-        gas_limit: Gas,
+        compute_limit: Compute,
         challenges_result: &ChallengesResult,
         random_seed: CryptoHash,
         is_new_chunk: bool,
@@ -505,7 +505,7 @@ impl NightshadeRuntime {
             epoch_height,
             gas_price,
             block_timestamp,
-            gas_limit: Some(gas_limit),
+            compute_limit: Some(compute_limit),
             random_seed,
             current_protocol_version,
             config: self.runtime_config_store.get_config(current_protocol_version).clone(),
@@ -999,7 +999,7 @@ impl RuntimeAdapter for NightshadeRuntime {
         transactions: &[SignedTransaction],
         last_validator_proposals: ValidatorStakeIter,
         gas_price: Balance,
-        gas_limit: Gas,
+        compute_limit: Compute,
         challenges: &ChallengesResult,
         random_seed: CryptoHash,
         generate_storage_proof: bool,
@@ -1027,7 +1027,7 @@ impl RuntimeAdapter for NightshadeRuntime {
             transactions,
             last_validator_proposals,
             gas_price,
-            gas_limit,
+            compute_limit,
             challenges,
             random_seed,
             is_new_chunk,
@@ -1058,7 +1058,7 @@ impl RuntimeAdapter for NightshadeRuntime {
         transactions: &[SignedTransaction],
         last_validator_proposals: ValidatorStakeIter,
         gas_price: Balance,
-        gas_limit: Gas,
+        compute_limit: Compute,
         challenges: &ChallengesResult,
         random_value: CryptoHash,
         is_new_chunk: bool,
@@ -1076,7 +1076,7 @@ impl RuntimeAdapter for NightshadeRuntime {
             transactions,
             last_validator_proposals,
             gas_price,
-            gas_limit,
+            compute_limit,
             challenges,
             random_value,
             is_new_chunk,
@@ -1639,7 +1639,7 @@ mod test {
             transactions: &[SignedTransaction],
             last_proposals: ValidatorStakeIter,
             gas_price: Balance,
-            gas_limit: Gas,
+            compute_limit: Compute,
             challenges: &ChallengesResult,
         ) -> (StateRoot, Vec<ValidatorStake>, Vec<Receipt>) {
             let mut result = self
@@ -1654,7 +1654,7 @@ mod test {
                     transactions,
                     last_proposals,
                     gas_price,
-                    gas_limit,
+                    compute_limit,
                     challenges,
                     CryptoHash::default(),
                     true,
@@ -1870,7 +1870,7 @@ mod test {
                     &transactions[i as usize],
                     ValidatorStakeIter::new(self.last_shard_proposals.get(&i).unwrap_or(&vec![])),
                     self.runtime.genesis_config.min_gas_price,
-                    u64::max_value(),
+                    Compute::max_value(),
                     &challenges_result,
                 );
                 self.state_roots[i as usize] = state_root;

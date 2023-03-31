@@ -1194,7 +1194,7 @@ mod tests {
             epoch_height: 3,
             gas_price: 2,
             block_timestamp: 1,
-            gas_limit: None,
+            compute_limit: None,
             random_seed: CryptoHash::default(),
             current_protocol_version: 1,
             config: Arc::new(RuntimeConfig::test()),

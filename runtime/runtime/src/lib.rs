@@ -1334,7 +1334,7 @@ impl Runtime {
             Ok(())
         };
 
-        let compute_limit = apply_state.gas_limit.unwrap_or(Gas::max_value());
+        let compute_limit = apply_state.compute_limit.unwrap_or(Compute::max_value());
 
         // We first process local receipts. They contain staking, local contract calls, etc.
         if let Some(prefetcher) = &mut prefetcher {
@@ -1700,7 +1700,7 @@ mod tests {
             epoch_height: 0,
             gas_price: GAS_PRICE,
             block_timestamp: 100,
-            gas_limit: Some(gas_limit),
+            compute_limit: Some(gas_limit),
             random_seed: Default::default(),
             current_protocol_version: PROTOCOL_VERSION,
             config: Arc::new(RuntimeConfig::test()),
@@ -1860,7 +1860,7 @@ mod tests {
         let receipt_gas_cost =
             apply_state.config.fees.fee(ActionCosts::new_action_receipt).exec_fee()
                 + apply_state.config.fees.fee(ActionCosts::transfer).exec_fee();
-        apply_state.gas_limit = Some(receipt_gas_cost * 3);
+        apply_state.compute_limit = Some(receipt_gas_cost * 3);
 
         let n = 40;
         let receipts = generate_receipts(small_transfer, n);
@@ -1926,7 +1926,7 @@ mod tests {
             } else if num_receipts_per_block > 1 {
                 num_receipts_per_block -= 1;
             }
-            apply_state.gas_limit = Some(num_receipts_per_block * receipt_gas_cost);
+            apply_state.compute_limit = Some(num_receipts_per_block * receipt_gas_cost);
             let prev_receipts: &[Receipt] = receipt_chunks.next().unwrap_or_default();
             num_receipts_given += prev_receipts.len() as u64;
             let apply_result = runtime
@@ -2011,7 +2011,7 @@ mod tests {
             receipt_exec_gas_fee;
         apply_state.config = Arc::new(free_config);
         // This allows us to execute 3 receipts per apply.
-        apply_state.gas_limit = Some(receipt_exec_gas_fee * 3);
+        apply_state.compute_limit = Some(receipt_exec_gas_fee * 3);
 
         let num_receipts = 6;
         let receipts = generate_receipts(small_transfer, num_receipts);
