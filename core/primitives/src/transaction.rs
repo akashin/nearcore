@@ -417,6 +417,7 @@ pub struct ExecutionOutcome {
     /// The amount of the gas burnt by the given transaction or receipt.
     pub gas_burnt: Gas,
     /// The amount of compute time spent by the given transaction or receipt.
+    #[borsh_skip]
     pub compute_usage: Compute,
     /// The amount of tokens burnt corresponding to the burnt gas amount.
     /// This value doesn't always equal to the `gas_burnt` multiplied by the gas price, because
